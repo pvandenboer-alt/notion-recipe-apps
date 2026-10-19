@@ -66,8 +66,24 @@ jobs:
             echo "$KEYSTORE" | base64 -d > ~/.android/debug.keystore
           else
             echo "::warning::No ANDROID_KEYSTORE_BASE64 secret: signing with a throwaway key, so this APK won't install over earlier builds."
-            keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            keytool -genkeypair -v -storetype pkcs12 -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           fi
+
+      - name: Sign with that key
+        run: |
+          cat >> android/app/build.gradle <<'GRADLE'
+
+          android {
+              signingConfigs {
+                  debug {
+                      storeFile file(System.getProperty('user.home') + '/.android/debug.keystore')
+                      storePassword 'android'
+                      keyAlias 'androiddebugkey'
+                      keyPassword 'android'
+                  }
+              }
+          }
+          GRADLE
 
       - name: Build APK
         working-directory: brew-book/android
