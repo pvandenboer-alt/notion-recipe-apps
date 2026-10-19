@@ -1,0 +1,13 @@
+{
+  "appId": "io.github.pvandenboer_alt.brewbook",
+  "appName": "Brew book",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#FFFFFF"
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true },
+    "SystemBars": { "insetsHandling": "native", "initialViewportFitValueHint": "cover" },
+    "LocalNotifications": { "iconColor": "#E89B1E" }
+  }
+}

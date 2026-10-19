@@ -1,0 +1,13 @@
+{
+  "appId": "io.github.pvandenboer_alt.recipebook",
+  "appName": "Recipe book",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#FFFFFF"
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true },
+    "SystemBars": { "insetsHandling": "native", "initialViewportFitValueHint": "cover" },
+    "LocalNotifications": { "iconColor": "#D9730D" }
+  }
+}

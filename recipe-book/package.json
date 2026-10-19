@@ -1,0 +1,21 @@
+{
+  "name": "recipe-book",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Recipe book: cooking recipe library backed by Notion",
+  "scripts": {
+    "android:add": "cap add android",
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/local-notifications": "8.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "8.5.3"
+  }
+}

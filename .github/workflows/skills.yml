@@ -1,0 +1,33 @@
+name: Package Claude skills
+
+# Zips each skill folder so it can be uploaded to Claude, and publishes the zips as the "skills" release.
+on:
+  push:
+    branches: [main]
+    paths: ['skills/**', '.github/workflows/skills.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd skills
+          for d in */; do d=${d%/}; zip -qr "../$d.zip" "$d" -x '*/__pycache__/*' '*.DS_Store'; done
+          cd ..
+          NOTES="Claude skills for adding recipes to Notion. Download a zip and upload it in Claude under Settings → Capabilities → Skills. Details: https://github.com/${{ github.repository }}#readme"
+          git tag -f skills && git push -f origin refs/tags/skills
+          if gh release view skills >/dev/null 2>&1; then
+            gh release upload skills *.zip --clobber
+            gh release edit skills --title "Claude skills" --notes "$NOTES"
+          else
+            gh release create skills *.zip --title "Claude skills" --notes "$NOTES"
+          fi
