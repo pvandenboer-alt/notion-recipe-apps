@@ -278,8 +278,8 @@ def to_markdown(r):
 
     if r["uncertain"]:
         if r["review"]:
-            out.append('<callout icon="⚠️" color="yellow_bg">\n\t**Check before cooking**\n'
-                       + "\n".join("\t- " + esc(u) for u in r["uncertain"]) + "\n</callout>")
+            out.append('<callout icon="⚠️" color="yellow_bg">\n**Check before cooking**\n\n'
+                       + "\n".join("- " + esc(u) for u in r["uncertain"]) + "\n</callout>")
         else:
             out += ["## Assumptions", *["- " + esc(u) for u in r["uncertain"]]]
     if r["about"]:
@@ -293,7 +293,7 @@ def to_markdown(r):
         else:
             for k in range(0, len(gallery), 2):
                 pair = gallery[k:k + 2]
-                out.append("<columns>\n" + "\n".join("\t<column>\n" + img(i, "\t\t") + "\n\t</column>" for i in pair)
+                out.append("<columns>\n" + "\n".join("<column>\n" + img(i) + "\n</column>" for i in pair)
                            + "\n</columns>")
 
     if r["ingredients"]:
@@ -306,10 +306,16 @@ def to_markdown(r):
 
     if r["steps"]:
         out.append("## Method")
-        for n, st in enumerate(r["steps"], 1):
-            title = f"**{esc(st['title'])}.**" if st["title"] else ""
-            out.append(f"{n}. " + " ".join(x for x in (title, esc(st["text"])) if x))
-            out += [img(i, "\t") for i in r["images"] if i["step"] == n]
+        line = lambda st: " ".join(x for x in ((f"**{esc(st['title'])}.**" if st["title"] else ""), esc(st["text"])) if x)
+        if any(i["step"] for i in r["images"]):
+            # Step photos are children of their step, which needs Notion's tag form for list items.
+            items = []
+            for n, st in enumerate(r["steps"], 1):
+                pics = [img(i) for i in r["images"] if i["step"] == n]
+                items.append("<li>\n" + line(st) + ("\n\n" + "\n\n".join(pics) if pics else "") + "\n</li>")
+            out.append('<ol type="1">\n' + "\n".join(items) + "\n</ol>")
+        else:
+            out += [f"{n}. " + line(st) for n, st in enumerate(r["steps"], 1)]
 
     if r["tips"]:
         out.append("## Tips and variations")
@@ -334,11 +340,12 @@ def to_markdown(r):
         out.append("Not cooked yet.")
 
     if r["transcript"]:
-        out += ['## Transcription {toggle="true"}', *["\t" + esc(l) for l in re.split(r"\n+", r["transcript"]) if l.strip()]]
+        out.append('<toggle heading="h2">\nTranscription\n\n' + "\n\n".join(esc(l) for l in re.split(r"\n+", r["transcript"]) if l.strip()) + "\n</toggle>")
     js = json.dumps({"v": 1, **r}, ensure_ascii=False, separators=(",", ":"))
-    out += ["---", '## App data {toggle="true"}',
-            "\tUsed by the Recipe book app. Edit recipes with the Recipe book skill so this stays in sync.",
-            "\t```json", *["\t" + ch for ch in chunk_json(js)], "\t```"]
+    # Notion's current Markdown: a toggle heading is <toggle heading="h2">, and code fences are never indented.
+    # The old '## App data {toggle="true"}' form is now saved as plain text, which the app can't read.
+    out += ["---", '<toggle heading="h2">\nApp data\n\nUsed by the Recipe book app. Edit recipes with the Recipe book skill so this stays in sync.\n\n'
+            + "```json\n" + "\n".join(chunk_json(js)) + "\n```\n</toggle>"]
     return "\n".join(out)
 
 
