@@ -1,6 +1,6 @@
 # Brew book and Recipe book
 
-Two free Android apps that turn a Notion database into a recipe book you can actually cook from in the kitchen.
+Two free Android apps that turn a Notion database into a recipe book you can actually cook from in the kitchen, plus Recipe book for Mac.
 
 - **Brew book** is for homebrewers. It covers beer recipes with automatic OG, IBU and colour figures, scaling to your own batch size and efficiency, a step-by-step brew day with boil and hop alarms, and a brew log. You can add and edit recipes in the app or let Claude read them from photos of brew sheets and books.
 - **Recipe book** is for cooking and baking. It has a photo grid or sortable list of your recipes, filters by cuisine, main ingredient, tags and total time, serving scaling, and a cook mode with step timers that keeps the screen on. Claude adds the recipes from links, photos or cookbook pages, and the app reads them.
@@ -27,6 +27,17 @@ To update, download the newest APK from the same link and install it over the ol
 
 One integration can serve both apps. The secret is stored only on your phone, and the integration can only see the pages you connect it to.
 
+## Recipe book for Mac
+
+The same Recipe book on a Mac, laid out for a laptop on the kitchen bench: a photo grid of your recipes with a sidebar of courses, cuisines and tags, and recipe pages with the ingredients beside the method. Instead of a full-screen cook mode, you scroll through the recipe and the current step is highlighted, with the step before and after still in view. Step photos sit under their step, ingredients tick off, timers keep running while you look at other recipes, and the screen stays on while you cook.
+
+1. Download the DMG: [Apple silicon (M1 and later)](https://github.com/pvandenboer-alt/notion-recipe-apps/releases/download/recipe-book-mac/RecipeBook-mac-arm64.dmg) or [Intel](https://github.com/pvandenboer-alt/notion-recipe-apps/releases/download/recipe-book-mac/RecipeBook-mac-x64.dmg).
+2. Open it and drag **Recipe book** into **Applications**.
+3. Open Recipe book. The first time, macOS says it can't check the app for malicious software, because it isn't signed with a paid Apple developer certificate. Click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
+4. Paste your Notion integration secret. The one you made for the phone works; see step 3 of Install above if you don't have one yet.
+
+Keyboard: → and ← move through the steps, ⌘T starts the current step's timer, ⌘F searches, ⌘R syncs, ⌘+ and ⌘− change the text size. Closing the window keeps timers running; quit with ⌘Q. The app tells you in its sidebar when a newer version is out.
+
 ## Adding recipes with Claude
 
 The repository includes two [Claude](https://claude.ai) skills that read recipes from photos, links, PDFs or pasted text and save them in exactly the format the apps read. They convert to metric, sanity-check the numbers and flag anything uncertain for you to check.
@@ -51,7 +62,7 @@ Without Claude, you can still add cooking recipes by hand. Each page needs an **
 
 ## Build your own copy
 
-The apps are plain HTML, CSS and JavaScript (`brew-book/www`, `recipe-book/www`) wrapped with [Capacitor](https://capacitorjs.com). GitHub Actions builds the APKs, so you don't need Android Studio.
+The apps are plain HTML, CSS and JavaScript (`brew-book/www`, `recipe-book/www`) wrapped with [Capacitor](https://capacitorjs.com). GitHub Actions builds the APKs, so you don't need Android Studio. The Mac app (`recipe-book-mac`) wraps its own `www` folder with [Electron](https://www.electronjs.org) and is built on GitHub's macOS runners; run it locally with `npm install` and `npm start` in that folder.
 
 1. Fork this repository and enable Actions on your fork.
 2. Optionally change `appId` in `capacitor.config.json` so your build installs next to the official one.

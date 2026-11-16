@@ -1,0 +1,44 @@
+{
+  "name": "recipe-book-mac",
+  "productName": "Recipe book",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Recipe book for Mac: cooking recipe library backed by Notion",
+  "main": "main.js",
+  "repository": "github:pvandenboer-alt/notion-recipe-apps",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac dmg --arm64 --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.3.2",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.pvandenboer_alt.recipebook.mac",
+    "productName": "Recipe book",
+    "copyright": "MIT licence",
+    "files": ["main.js", "preload.js", "www/**/*", "package.json"],
+    "directories": { "buildResources": "build", "output": "dist" },
+    "afterPack": "build/adhoc-sign.js",
+    "mac": {
+      "category": "public.app-category.food-and-drink",
+      "icon": "build/icon.png",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "darkModeSupport": true,
+      "minimumSystemVersion": "12.0"
+    },
+    "dmg": {
+      "artifactName": "RecipeBook-mac-${arch}.dmg",
+      "title": "Recipe book",
+      "contents": [
+        { "x": 150, "y": 190 },
+        { "x": 390, "y": 190, "type": "link", "path": "/Applications" }
+      ],
+      "window": { "width": 540, "height": 380 }
+    }
+  }
+}

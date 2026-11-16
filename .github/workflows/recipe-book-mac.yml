@@ -1,0 +1,70 @@
+name: Build Recipe book for Mac
+
+# Builds the Mac app (Apple silicon and Intel) and publishes it as the "recipe-book-mac" release, replacing the previous DMGs.
+# Pull requests only build and attach the DMGs to the run, so a change can be tried before it's released.
+on:
+  push:
+    branches: [main]
+    paths: ['recipe-book-mac/**', '.github/workflows/recipe-book-mac.yml']
+  pull_request:
+    paths: ['recipe-book-mac/**', '.github/workflows/recipe-book-mac.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: recipe-book-mac
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Version number
+        run: npm version "1.${{ github.run_number }}.0" --no-git-tag-version --allow-same-version
+
+      # No Apple developer certificate: the app is signed ad hoc (build/adhoc-sign.js), so macOS asks once before opening it.
+      - name: Build DMGs
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --mac dmg --arm64 --x64 --publish never
+
+      - name: Check the app
+        run: |
+          ls -la dist
+          test -f dist/RecipeBook-mac-arm64.dmg
+          test -f dist/RecipeBook-mac-x64.dmg
+          codesign --verify --deep --strict "dist/mac-arm64/Recipe book.app"
+
+      - name: Keep the DMGs with this run
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: RecipeBook-mac
+          path: recipe-book-mac/dist/*.dmg
+          retention-days: 14
+
+      - name: Publish release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: 1.${{ github.run_number }}
+        run: |
+          NOTES=$(printf 'Version %s.\n\nDownload **RecipeBook-mac-arm64.dmg** for Macs with Apple silicon (M1 and later), or **RecipeBook-mac-x64.dmg** for older Intel Macs. Open it and drag Recipe book into Applications.\n\nThe first time, macOS says it can'"'"'t check the app for malicious software, because it isn'"'"'t signed with a paid Apple developer certificate. Open System Settings → Privacy & Security, scroll down and click **Open Anyway**. Setup instructions: https://github.com/%s#recipe-book-for-mac' "$VERSION" "${{ github.repository }}")
+          git tag -f recipe-book-mac && git push -f origin refs/tags/recipe-book-mac
+          if gh release view recipe-book-mac >/dev/null 2>&1; then
+            gh release upload recipe-book-mac dist/RecipeBook-mac-arm64.dmg dist/RecipeBook-mac-x64.dmg --clobber
+            gh release edit recipe-book-mac --title "Recipe book for Mac $VERSION" --notes "$NOTES"
+          else
+            gh release create recipe-book-mac dist/RecipeBook-mac-arm64.dmg dist/RecipeBook-mac-x64.dmg --title "Recipe book for Mac $VERSION" --notes "$NOTES"
+          fi
